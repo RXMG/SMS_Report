@@ -96,8 +96,10 @@ def get_mamba():
     snakes['Hitpath Offer ID']=pd.to_numeric(snakes['Offer'].str.split('-').str[0],errors='coerce')
     snakes=snakes.reset_index()
     snakes['Shortcode'] = snakes['Dataset'].str.split('_',expand = True)[0]
-    snakes['Shortcode_DP.sV']= snakes['Segment '].str.extract(r'(\w+\.\w+)_')
+    #snakes['Shortcode_DP.sV']= snakes['Segment '].str.extract(r'(\w+\.\w+)_')
     snakes = snakes.loc[(snakes['Offer']!='' ) & (snakes['Date'].isna() ==False) ,]
+    snakes['shortcode_DP.SV'] = snakes['Dataset'].str[:-7]
+
     return snakes 
 
 
@@ -127,12 +129,12 @@ def transform_sms_df(df):
     df = df[df['Affiliate ID'].isin(current_active_pubid)]
     # import publisher information 
     gc = pygsheets.authorize(service_account_file=filepath.service_account_location)
-    rxmgref = gc.open_by_url('https://docs.google.com/spreadsheets/d/1haHFVQlCL7C-nlOUoU_MuPUOe_OW9IoyanTJ4Z5-wt8/edit#gid=0') 
-    publisher  = rxmgref[1].get_as_df()
-    df = df.merge(publisher[['PUBID','NEW DP.DS or DP.sV','Sub Vertical ']], how = 'left', left_on ='Affiliate ID', right_on = 'PUBID')
+    rxmgref = gc.open_by_url('https://docs.google.com/spreadsheets/d/1Tzda6Djr3zQmOhWu7Ief3GVR9Cjaml8238CeX7chj_U/edit#gid=1620368362') 
+    publisher  = rxmgref.worksheet('title','Publisher Configurations').get_as_df()
+    df = df.merge(publisher[['PUBID','NEW DP.DS or DP.sV','Sub Vertical']], how = 'left', left_on ='Affiliate ID', right_on = 'PUBID')
     df.rename(columns={
         'NEW DP.DS or DP.sV': 'DP.sV',
-        'Sub Vertical ': 'Data Vertical'
+        'Sub Vertical': 'Data Vertical'
         }, inplace=True) 
     df['PUBID1'] = df['PUBID'].astype(str).str.split('.',expand = True)[0]
     df['DP&Pub'] = df['DP.sV']+'_'+ df['PUBID1']
@@ -148,4 +150,28 @@ def transform_sms_df(df):
     df['CTR50'] = df['CTR Normalized'] + df['eCPM Normalized']
     df['Profit'] = df['Revenue'].fillna(0) - df['Cost'].fillna(0)
     
+    
     return df
+
+def get_lanina():
+    # La nina 
+    gc = pygsheets.authorize(service_account_file=filepath.service_account_location)
+    lanina = gc.open_by_url('https://docs.google.com/spreadsheets/d/1obszkCQoE0ELOR1O0CrLVETUEmEIWlGuyAmK3FgWSJg/edit#gid=1060654066')
+    lanina_sheet =  lanina.worksheet('title','La Nina (Current)')
+    lanina_df = lanina_sheet.get_as_df()
+    return lanina_df
+
+
+def get_publisher():
+    # import publisher information 
+    gc = pygsheets.authorize(service_account_file=filepath.service_account_location)
+    rxmgref = gc.open_by_url('https://docs.google.com/spreadsheets/d/1Tzda6Djr3zQmOhWu7Ief3GVR9Cjaml8238CeX7chj_U/edit#gid=1620368362') 
+    publisher  = rxmgref.worksheet('title','Publisher Configurations').get_as_df()
+    return publisher
+
+def get_mamba_directory():
+    gc = pygsheets.authorize(service_account_file=filepath.service_account_location)
+    mamba_dic = gc.open_by_url('https://docs.google.com/spreadsheets/d/12vqSDueybprNphtsw7gXR5vmgcPG6_5ZNcnWzNpiasY/edit#gid=1726482538')
+    mamba_dic_df  = mamba_dic.worksheet('title','Directory')
+    mamba_dic_df = mamba_dic_df.get_as_df()
+    return mamba_dic_df
