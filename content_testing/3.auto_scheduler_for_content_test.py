@@ -15,11 +15,13 @@ import infrastructure
 import re
 
 # use creds to create a client to interact with the Google Drive API
+ct_df = pd.read_csv("/Users/liliguo/Desktop/github/SMS_Report/Daily_Reporting/Content Testing Schedule.csv")
 gc = pygsheets.authorize(service_account_file = filepaths.service_account_location)
-cobra = gc.open_by_url('https://docs.google.com/spreadsheets/d/1xxbG66GYmKU8Rmtq1vUvvYGDgfMSI0v16I8lwuEw7m4/edit#gid=1186670009') 
-content_test = gc.open_by_url("https://docs.google.com/spreadsheets/d/127z4-QF8uuAsfzCd0yI9RbJnzkeb7H9VwXIO-N2Isng/edit#gid=0&fvid=876764931")
-content_test_wks = content_test.worksheet('title','CT Schedule')
-ct_df = content_test_wks.get_as_df()
+cobra = gc.open_by_url('https://docs.google.com/spreadsheets/d/1cSCdRLJkj-m1kp-gTAlv9OCZHKPuhIYZBcp5R5y2xAY/edit#gid=1189721992') 
+# content test backup file 
+content_test_url = gc.open_by_url("https://docs.google.com/spreadsheets/d/127z4-QF8uuAsfzCd0yI9RbJnzkeb7H9VwXIO-N2Isng/edit#gid=0&fvid=876764931")
+content_test_wks = content_test_url.worksheet('title','CT Schedule')
+content_test_google_df = content_test_wks.get_as_df()
 # open worksheet - cobra
 schedule_wks  =  cobra.worksheet('title','New Mamba')
 schedule = schedule_wks.get_as_df()
@@ -33,7 +35,7 @@ header = schedule.iloc[0,:]
 schedule.columns = header
 schedule1 = schedule.iloc[1:,:]
 
-# find position for each pubID
+# find position for each sc_dp
 position = schedule1.loc[schedule1.iloc[:,1].str.contains("[A-Z.]+_[A-Z.]+_[0-9]+")].reset_index().iloc[:,0:3]
 position.columns = ['index','mailer','account']
 position['Affliate ID'] = position['account'].str[-6:]
@@ -42,10 +44,14 @@ number = 0
 problem_drop = [] 
 
 
-def insert_drop(ct_row_num,time,date,pubid,dropNumber,offerName,segment,sendStrategy,limit,offeset,ccID, jobname): 
+
+
+
+
+def insert_drop(time,date,sc_dp,dropNumber,offerName,segment,sendStrategy,limit,offeset,ccID, jobname): 
     global number
-    index = position[position['account']==pubid]['index'].values[0]
-    account = position[position['account']==pubid].account.values[0]
+    index = position[position['Shortcode_Dp.sv']==sc_dp]['index'].values[0]
+    account = position[position['Shortcode_Dp.sv']==sc_dp].account.values[0]
     #segment = account+"_"+segment
     start = 2  # the first 2 rows standing for date and day 
     
@@ -72,28 +78,37 @@ def insert_drop(ct_row_num,time,date,pubid,dropNumber,offerName,segment,sendStra
     
     schedule_wks.update_value((row_num,col), time)
     schedule_wks.update_value((row_segment,col), segment)
-    #schedule_wks.update_value((row_segment,col), segment) 
     schedule_wks.update_value((row_offername,col), offerName) 
     schedule_wks.update_value((row_sendstrategy,col), sendStrategy)
     schedule_wks.update_value((row_limit,col), limit)
     schedule_wks.update_value((row_creative,col), ccID)
     schedule_wks.update_value((row_offeset,col), offeset)
     schedule_wks.update_value((row_jobname,col),jobname )
-    content_test_wks.update_value((ct_row_num,14),'Scheduled')
+
+    if (dropNumber == 2) & (limit != ""):
+        previous_dropNumber = 1 
+        previous_drop_row_num = start + index + 1 + (previous_dropNumber-1)*9 # format
+        previous_drop_row_limit = previous_drop_row_num + 4
+        previous_drop_row_offeset = previous_drop_row_num + 5
+        new_offset = int(limit)+1 
+        new_limit = "Total - "+str(new_offset)
+        schedule_wks.update_value((previous_drop_row_limit,col), new_limit)
+        schedule_wks.update_value((previous_drop_row_offeset,col), new_offset)
+    
     #schedule_wks.update_value((row_mmid,col), mmid)4
 
     
     number += 1 
     print([offerName,row_num,col,account])
 
-# add one offer
+    
 def add_cobra_by_pub(row): 
     global problem_drop
-    ct_row_num =int(row['index'])+2
+    
 
     date = row['Date'].strftime("%-m/%-d/%Y")
     time = row['Time']
-    pubid = row['Dataset']
+    sc_dp = row['Affiliate ID_DP.DS']
     dropNumber = int(row['Drop Number'])
     offerName = row['Offer']
     segment = row['Segment']
@@ -101,28 +116,29 @@ def add_cobra_by_pub(row):
     limit = row['Limit']
     offeset = row['Offset']
     ccID = row['Creative']
-    #body_content = row.at[0,'Body Content']
-    #mmid = row.at[0,'MMID']
     jobname = row['Job Name']
-    #insert_drop(ct_row_num,time,date,pubid,dropNumber,offerName,segment,sendStrategy,note,creativeType,ccID, akshad_note)
+
 
     try: 
-        print(row)
-        insert_drop(ct_row_num,time,date,pubid,dropNumber,offerName,segment,sendStrategy,limit,offeset,ccID, jobname)
+        
+        insert_drop(time,date,sc_dp,dropNumber,offerName,segment,sendStrategy,limit,offeset,ccID, jobname)
    
     except: 
-        print("Something went wrong with the test for "+pubid)
-        problem_drop += [str(offerName) + " in " +pubid ]
+        print("Something went wrong with the test for "+sc_dp)
+        problem_drop += [str(offerName) + " in " +sc_dp ]
         pass 
     
 
-def add_cobra_by_non_scheduled(): 
-    row = ct_df.loc[(ct_df['Result']=="Special Setup"),].reset_index()
-    row.apply( add_cobra_by_pub,axis = 1)
+def add_cobra_by_non_scheduled(backup): 
+    
+    ct_df.apply( add_cobra_by_pub,axis = 1)
+    ct_df['Result'] = 'Scheduled'
+    backup = backup._append(ct_df, ignore_index=True)
+    content_test_wks.set_dataframe(backup,(1,1))
     print("Completed!")
     
 #### write in cobra  
-add_cobra_by_non_scheduled()   
+add_cobra_by_non_scheduled(backup = content_test_google_df)   
 
 
 
