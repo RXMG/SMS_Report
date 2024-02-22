@@ -16,19 +16,21 @@ from datetime import date
 # if you didn't install smartsheet, please uncomment the following code: pip install smartsheet 
 
 def get_smartsheet(sheet):
-    options=['offers_sms','test_sms','emit','offers_email']
+    options=['offers_sms','test_sms','emit','offers_email','ow_sms']
     if sheet not in options:
         raise ValueError("Avaliable Smartsheets are: %s" % options)
     offer_id='4192377687566212'
     test_id = '3137750414190468'
     sheet_id='4063260640077700'
     emit_id='6899759718918020'
+    ow_id = '5860204788797316'
     
     download_path= filepath.smartsheet_folder
     smartsheet_client_lili = smartsheet.Smartsheet('2jw8gxGHmbJsw0b7aNLsgkz0cdlwqumLOy3Sj') #  at token is fully used, we need extra token to load content test csv 
     offer_sheet=smartsheet_client_lili.Sheets.get_sheet_as_csv(offer_id,download_path,'SMS Offer Sheet.csv')
     content_submission_sheet=smartsheet_client_lili.Sheets.get_sheet_as_csv(test_id,download_path,'SMS Testing Pipeline.csv')
     email_offer_csv=smartsheet_client_lili.Sheets.get_sheet_as_csv(sheet_id,download_path,'Email Offer Data Workbook.csv')
+    offer_wall_csv=smartsheet_client_lili.Sheets.get_sheet_as_csv(ow_id,download_path,'SMS Offer Wall Management.csv')
     emit_sheet=smartsheet_client_lili.Sheets.get_sheet_as_csv(emit_id,download_path)
 
     
@@ -40,7 +42,8 @@ def get_smartsheet(sheet):
         return pd.read_csv(os.path.join(download_path,'Email Offer Data Workbook.csv'))
     elif sheet=='emit':
         return pd.read_csv(os.path.join(download_path,"Email Identifier Mapping Tracker.csv"))
-
+    elif sheet=='ow_sms':
+        return pd.read_csv(os.path.join(download_path,'SMS Offer Wall Management.csv'))
     else:
         print('Sheet name not recongized')
         
@@ -52,7 +55,7 @@ def get_mamba():
     schedule.columns = s
     """
     gc = pygsheets.authorize(service_account_file=filepath.service_account_location)
-    mamba = gc.open_by_url('https://docs.google.com/spreadsheets/d/12vqSDueybprNphtsw7gXR5vmgcPG6_5ZNcnWzNpiasY/edit#gid=534096291') 
+    mamba = gc.open_by_url('https://docs.google.com/spreadsheets/d/12vqSDueybprNphtsw7gXR5vmgcPG6_5ZNcnWzNpiasY/edit#gid=1186670009') 
     new_mamba  = mamba.worksheet('title','New Mamba')
     schedule = new_mamba.get_as_df()
 
@@ -62,9 +65,11 @@ def get_mamba():
          
     drops=['Drop 1','Drop 2','Drop 3','Drop 4','Drop 5','Drop 6']
     frames={}
-         
+    #schedule['Mailers'] = drops[0]
     topdexes = schedule[schedule['Mailers']=="Drop 1"].index.to_list()
     indexes = schedule[schedule['Mailers'].isin(drops)].index.to_list()
+    #topdexes = schedule['Mailers'].index.to_list()
+    #indexes = schedule[('Mailers').isin(drops)].index.to_list()
     endexes = schedule[schedule['Dataset']=="Job Name"].index.to_list()
          
               
@@ -131,9 +136,9 @@ def transform_sms_df(df):
     gc = pygsheets.authorize(service_account_file=filepath.service_account_location)
     rxmgref = gc.open_by_url('https://docs.google.com/spreadsheets/d/1Tzda6Djr3zQmOhWu7Ief3GVR9Cjaml8238CeX7chj_U/edit#gid=1620368362') 
     publisher  = rxmgref.worksheet('title','Publisher Configurations').get_as_df()
-    df = df.merge(publisher[['PUBID','NEW DP.DS or DP.sV','Sub Vertical']], how = 'left', left_on ='Affiliate ID', right_on = 'PUBID')
+    df = df.merge(publisher[['PUBID','DP.DS or DP.sV','Sub Vertical']], how = 'left', left_on ='Affiliate ID', right_on = 'PUBID')
     df.rename(columns={
-        'NEW DP.DS or DP.sV': 'DP.sV',
+        'DP.DS or DP.sV': 'DP.sV',
         'Sub Vertical': 'Data Vertical'
         }, inplace=True) 
     df['PUBID1'] = df['PUBID'].astype(str).str.split('.',expand = True)[0]
