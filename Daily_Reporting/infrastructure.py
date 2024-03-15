@@ -104,7 +104,7 @@ def get_mamba_full_slot():
     snakes.index=index
     snakes=snakes[~snakes.index.duplicated()]
          
-    snakes['Hitpath Offer ID']=pd.to_numeric(snakes['Offer'].str.split('-').str[0],errors='coerce')
+    snakes['Hitpath Offer ID']=snakes['Offer'].str.split('-').str[0].str.strip()
     snakes['Hitpath Offer ID']=snakes['Hitpath Offer ID'].astype(str).str.replace('.0', '')
     snakes=snakes.reset_index()
     snakes['Shortcode'] = snakes['Dataset'].str.split('_',expand = True)[0]
