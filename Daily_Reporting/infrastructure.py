@@ -18,7 +18,7 @@ from datetime import timedelta
 # if you didn't install smartsheet, please uncomment the following code: pip install smartsheet 
 
 def get_smartsheet(sheet):
-    options=['offers_sms','test_sms','emit','offers_email','ow_sms','content_sms']
+    options=['offers_sms','test_sms','emit','offers_email','ow_sms','content_sms','ar_sms']
     if sheet not in options:
         raise ValueError("Avaliable Smartsheets are: %s" % options)
     offer_id='4192377687566212'
@@ -27,6 +27,7 @@ def get_smartsheet(sheet):
     emit_id='6899759718918020'
     ow_id = '5860204788797316'
     content_id = '8253683024220036'
+    ar_id = '1921464949231492'
     
     download_path= filepath.smartsheet_folder
     smartsheet_client_lili = smartsheet.Smartsheet('2jw8gxGHmbJsw0b7aNLsgkz0cdlwqumLOy3Sj') #  at token is fully used, we need extra token to load content test csv 
@@ -36,6 +37,7 @@ def get_smartsheet(sheet):
     offer_wall_csv=smartsheet_client_lili.Sheets.get_sheet_as_csv(ow_id,download_path,'SMS Offer Wall Management.csv')
     emit_sheet=smartsheet_client_lili.Sheets.get_sheet_as_csv(emit_id,download_path)
     content_sms_sheet=smartsheet_client_lili.Sheets.get_sheet_as_csv(content_id,download_path,'SMS Creative Submission.csv')
+    ar_sms_sheet=smartsheet_client_lili.Sheets.get_sheet_as_csv(content_id,download_path,'SMS AR Management.csv')
 
 
     
@@ -51,6 +53,8 @@ def get_smartsheet(sheet):
         return pd.read_csv(os.path.join(download_path,'SMS Offer Wall Management.csv'))
     elif sheet=='content_sms':
         return pd.read_csv(os.path.join(download_path,'SMS Creative Submission.csv'))
+    elif sheet=='ar_sms':
+        return pd.read_csv(os.path.join(download_path,'SMS AR Management.csv'))
     else:
         print('Sheet name not recongized')
 
