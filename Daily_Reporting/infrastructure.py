@@ -37,7 +37,7 @@ def get_smartsheet(sheet):
     offer_wall_csv=smartsheet_client_lili.Sheets.get_sheet_as_csv(ow_id,download_path,'SMS Offer Wall Management.csv')
     emit_sheet=smartsheet_client_lili.Sheets.get_sheet_as_csv(emit_id,download_path)
     content_sms_sheet=smartsheet_client_lili.Sheets.get_sheet_as_csv(content_id,download_path,'SMS Creative Submission.csv')
-    ar_sms_sheet=smartsheet_client_lili.Sheets.get_sheet_as_csv(content_id,download_path,'SMS AR Management.csv')
+    ar_sms_sheet=smartsheet_client_lili.Sheets.get_sheet_as_csv(ar_id,download_path,'SMS AR Management.csv')
 
 
     
