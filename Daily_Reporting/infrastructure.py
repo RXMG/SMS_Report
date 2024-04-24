@@ -176,13 +176,6 @@ def transform_sms_df(df):
     df['CTR50'] = df['CTR Normalized'] + df['eCPM Normalized']
     df['Profit'] = df['Revenue'].fillna(0) - df['Cost'].fillna(0)
     
-    df.sort_values(by = ['shortcode_DP.SV','Hitpath Offer ID','Send Strategy','Date'], ascending = True, inplace = True)
-    df['Offer Gap'] = df.groupby(['shortcode_DP.SV','Send Strategy','Hitpath Offer ID'])['Date'].diff()
-    df['Vertical Gap'] = df.groupby(['shortcode_DP.SV','Send Strategy',"Offer Vertical"])['Date'].diff()
-    df['Vertical Gap'] = df['Vertical Gap'].dt.days
-    df['Offer Gap'] = df['Offer Gap'].dt.days
-    df.loc[df['Send Strategy'] != 'P', 'Offer Gap'] = np.nan
-    df.loc[df['Send Strategy'] != 'P', 'Vertical Gap'] = np.nan
     
     return df
 
