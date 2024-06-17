@@ -15,7 +15,7 @@ from email import encoders
 from email.mime.application import MIMEApplication
 
 
-def send_email(filename,subject,body,toaddr):
+def send_email(filename,subject,body,toaddr, format = 'plain'):
     
     fromaddr = "schedulealartsrxmg@gmail.com"
     
@@ -45,7 +45,7 @@ def send_email(filename,subject,body,toaddr):
         body ="\n Please see attached file for details. \n Have a fanastic day! \n Bests, \n Lili Guo \n"
       
     # attach the body with the msg instance 
-    msg.attach(MIMEText(body, 'plain')) 
+    msg.attach(MIMEText(body, format)) 
       
     # open the file to be sent  
 

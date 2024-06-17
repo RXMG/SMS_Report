@@ -30,7 +30,8 @@ def get_smartsheet(sheet):
     ar_id = '1921464949231492'
     
     download_path= filepath.smartsheet_folder
-    smartsheet_client_lili = smartsheet.Smartsheet('2jw8gxGHmbJsw0b7aNLsgkz0cdlwqumLOy3Sj') #  at token is fully used, we need extra token to load content test csv 
+    smartsheet_client_lili = smartsheet.Smartsheet('2jw8gxGHmbJsw0b7aNLsgkz0cdlwqumLOy3Sj')
+    #smartsheet_client_lili_2 = smartsheet.Smartsheet('7fQH9Go8sf6CruwY3g4HHzKHe6wFMzNbgyAYy') #  at token is fully used, we need extra token to load content test csv 
     offer_sheet=smartsheet_client_lili.Sheets.get_sheet_as_csv(offer_id,download_path,'SMS Offer Sheet.csv')
     testing_pipeline=smartsheet_client_lili.Sheets.get_sheet_as_csv(test_id,download_path,'SMS Testing Pipeline.csv')
     email_offer_csv=smartsheet_client_lili.Sheets.get_sheet_as_csv(sheet_id,download_path,'Email Offer Data Workbook.csv')
@@ -39,8 +40,7 @@ def get_smartsheet(sheet):
     content_sms_sheet=smartsheet_client_lili.Sheets.get_sheet_as_csv(content_id,download_path,'SMS Creative Submission.csv')
     ar_sms_sheet=smartsheet_client_lili.Sheets.get_sheet_as_csv(ar_id,download_path,'SMS AR Management.csv')
 
-
-    
+    download_path= filepath.smartsheet_folder
     if sheet=='offers_sms':
         return pd.read_csv(os.path.join(download_path,'SMS Offer Sheet.csv'))
     elif sheet=='test_sms':
@@ -144,7 +144,11 @@ def transform_sms_df(df):
     df = df[df['Date']>= '2022-11-01']
     mamba = get_mamba()
     mamba['Affiliate ID'] = mamba['Dataset'].str.split('_',expand = True)[2].astype(int)
-    current_active_pubid= mamba.loc[mamba['Date'] == pd.to_datetime(date.today()),'Affiliate ID'].unique().tolist()
+    # current_active_pubid= mamba.loc[mamba['Date'] == pd.to_datetime(date.today()),'Affiliate ID'].unique().tolist()
+    end_date = pd.to_datetime(date.today())
+    start_date = end_date - pd.DateOffset(days=2)
+    last_3_days = mamba[(mamba['Date'] >= start_date) & (mamba['Date'] <= end_date)]
+    current_active_pubid = last_3_days['Affiliate ID'].unique().tolist()
     df = df[df['Affiliate ID'].isin(current_active_pubid)]
     # import publisher information 
     gc = pygsheets.authorize(service_account_file=filepath.service_account_location)
@@ -176,6 +180,13 @@ def transform_sms_df(df):
     df['CTR50'] = df['CTR Normalized'] + df['eCPM Normalized']
     df['Profit'] = df['Revenue'].fillna(0) - df['Cost'].fillna(0)
     
+#     df.sort_values(by = ['shortcode_DP.SV','Hitpath Offer ID','Send Strategy','Date'], ascending = True, inplace = True)
+#     df['Offer Gap'] = df.groupby(['shortcode_DP.SV','Send Strategy','Hitpath Offer ID'])['Date'].diff()
+#     df['Vertical Gap'] = df.groupby(['shortcode_DP.SV','Send Strategy',"Offer Vertical"])['Date'].diff()
+#     df['Vertical Gap'] = df['Vertical Gap'].dt.days
+#     df['Offer Gap'] = df['Offer Gap'].dt.days
+#     df.loc[df['Send Strategy'] != 'P', 'Offer Gap'] = np.nan
+#     df.loc[df['Send Strategy'] != 'P', 'Vertical Gap'] = np.nan
     
     return df
 
