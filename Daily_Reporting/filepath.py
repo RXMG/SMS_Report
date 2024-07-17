@@ -13,3 +13,7 @@ input_folder = "/Users/liliguo/Desktop/SMS-NewData/raw data/"
 output_folder =  "/Users/liliguo/Desktop/SMS-NewData/"
 #filepath to save service account 
 service_account_location = '/Users/liliguo/Desktop/SMS-NewData/cobra-reader2-a20820469446.json'
+# folder to download data 
+download_folder = "/Users/liliguo/Downloads/"
+# my name 
+name = 'Lili Guo'
