@@ -302,3 +302,15 @@ def get_upcoming_mamba(days_ahead=1):
     snakes=snakes.reset_index()
 
     return snakes
+
+def get_lexi():
+    # get most recent lexi data from download folder
+    download_path = filepath.download_folder 
+    df_files = [f for f in listdir(download_path) if isfile(join(download_path, f))& ('SS_LC_merged_data' in f)]
+    df_paths = ["{}/{}".format(download_path,jp_version) for jp_version in df_files]
+    times = [os.path.getmtime(path) for path in df_paths]
+    times_formatted = [time.strftime('%m/%d/%Y %H:%M:%S', time.gmtime(time_float)) for time_float in times]
+    most_recent_df = df_files[times.index(max(times))]
+    df_path = "{}/{}".format(download_path,most_recent_df)
+    df = pd.read_csv(df_path)
+    return df
