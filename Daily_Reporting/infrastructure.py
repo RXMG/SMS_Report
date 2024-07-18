@@ -15,6 +15,8 @@ import pygsheets
 from datetime import date
 import time 
 from datetime import timedelta
+from os import listdir
+from os.path import isfile, join
 # if you didn't install smartsheet, please uncomment the following code: pip install smartsheet 
 
 def get_smartsheet(sheet):
