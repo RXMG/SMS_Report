@@ -79,8 +79,10 @@ def upload_file(file_path, filename, item_id):
     
 
 
-def add_update_to_item(item_id, update_text):
+def add_update_to_item(item_id, update_text, type = None):
     time. sleep(30)
+    if type == "HTML":
+        update_text =  update_text.replace('"', '\\"')
     apiKey = 'eyJhbGciOiJIUzI1NiJ9.eyJ0aWQiOjM4NTgwOTE2NiwiYWFpIjoxMSwidWlkIjoxNjQ3NDk4MywiaWFkIjoiMjAyNC0wNy0xN1QyMjozMToxMS4wMDBaIiwicGVyIjoibWU6d3JpdGUiLCJhY3RpZCI6NjEwMDE4MywicmduIjoidXNlMSJ9.3TRaKq9JxxJOpzFYeq6_-x3NSvwuBQoYH8Ws6Npscg0'
 
     headers = {
